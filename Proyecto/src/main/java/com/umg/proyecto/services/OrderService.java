@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,6 +26,7 @@ public class OrderService {
             order.setId(rs.getInt("ID"));
             order.setPurchaseDate(rs.getDate("PURCHASE_DATE"));
             order.setCustomerId(rs.getInt("CUSTOMER_ID"));
+            order.setStatus(rs.getString("STATUS"));
             order.setTotal(rs.getFloat("TOTAL"));
             return order;
         }
@@ -65,5 +67,23 @@ public class OrderService {
     public void delete(Integer id) {
         String sql = "DELETE FROM \"ORDER\" WHERE ID = ?";
         jdbcTemplate.update(sql, id);
+    }
+
+    public void updateOrderTotal(Integer orderId) {
+        String sql = "SELECT SUM(od.QTY * p.PRICE) AS TOTAL " +
+                "FROM ORDER_DETAIL od " +
+                "JOIN PRODUCT p ON od.PRODUCT_ID = p.ID " +
+                "WHERE od.ORDER_ID = ?";
+        Float total = jdbcTemplate.queryForObject(sql, new Object[]{orderId}, Float.class);
+
+        String updateSql = "UPDATE \"ORDER\" SET TOTAL = ? WHERE ID = ?";
+        jdbcTemplate.update(updateSql, total, orderId);
+    }
+
+    @Transactional
+    public void updateOrderStatus(Integer orderId, String purchaseStatus) {
+
+        String sql = "UPDATE \"ORDER\" SET STATUS = ? WHERE ID = ?";
+        jdbcTemplate.update(sql, purchaseStatus, orderId);
     }
 }

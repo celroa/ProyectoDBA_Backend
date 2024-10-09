@@ -16,7 +16,7 @@ public class CustomerService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    // Mapeador de filas para convertir las filas de la base de datos en objetos Customer
+
     private final RowMapper<Customer> customerRowMapper = new RowMapper<Customer>() {
         @Override
         public Customer mapRow(ResultSet rs, int rowNum) throws SQLException {
